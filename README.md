@@ -1,3 +1,6 @@
+Note: The app performs personal requests without an access token. The limit for this per IP address is 500 per minute.
+Please find more detail about such limits here: https://api.wikimedia.org/wiki/Rate_limits#:~:text=API%20requests%20authenticated%20using%20a,to%205%2C000%20requests%20per%20hour.
+
 The program scrapes data from two Wikipedia links.
 
 One is the list that contains the most popular country-related pages of Wikipedia.
