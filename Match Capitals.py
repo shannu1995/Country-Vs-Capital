@@ -5,6 +5,10 @@ import requests
 import tkinter.messagebox as msg
 class CapitalsMatcher:
     def __init__(self, master):
+        self.master = master
+        self.master.title("Capitals Matcher")
+        self.create_lists()
+    def create_lists(self):
         url = "https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Countries/Popular_pages"
         r = requests.get(url)
         df_list = pd.read_html(r.text)
@@ -25,8 +29,6 @@ class CapitalsMatcher:
         self.df1 = pd.merge(self.df1, temp_df, how="inner",left_on="Page title",right_on="Country/Territory")
         #self.df1.drop(columns=["Country/Territory"], inplace=True)
         self.df1 = self.df1[["Page title"]]
-        self.master = master
-        self.master.title("Capitals Matcher")
         self.create_widgets()
     def create_widgets(self):
         #First creating the labels under which the Treeviews will be installed.
@@ -94,10 +96,17 @@ class CapitalsMatcher:
                 if self.chosen_answers[key] == self.correct_answers[key]:
                     match_count += 1
             if match_count == len(self.correct_answers):
-                msg.showinfo(title="Victory!", message="You have managed to get all your answers correct. Well done!")
+                success_msg = msg.askquestion(title="Victory!", message="You have managed to get all your answers correct. Well done! Do you want to do it again?")
+                if success_msg == "yes":
+                    self.create_lists()
+                else:
+                    root.destroy()
             else:
-                msg.showinfo(title="Defeat!", message="You got only " + str(match_count) + " correct out of " + str(len(self.correct_answers)))
-            root.destroy()
+                fail_msg = msg.askquestion(title="Defeat!", message="You got only " + str(match_count) + " correct out of " + str(len(self.correct_answers)) + ". The correct answers are: " + str(self.correct_answers) + ". Do you want to retry?")
+                if fail_msg == "yes":
+                    self.create_lists()
+                else:
+                    root.destroy()
 if __name__ == "__main__":
     root = tk.Tk()
     app = CapitalsMatcher(root)
