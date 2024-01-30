@@ -4,11 +4,13 @@ from tkinter import ttk
 import requests
 import tkinter.messagebox as msg
 class CapitalsMatcher:
-    def __init__(self, master):
+    def __init__(self, master, difficulty):
         self.master = master
+        self.difficulty = difficulty
         self.master.title("Capitals Matcher")
-        self.create_lists()
-    def create_lists(self):
+        self.create_lists(difficulty)
+    def create_lists(self, difficulty):
+        self.difficulty = difficulty
         url = "https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Countries/Popular_pages"
         r = requests.get(url)
         df_list = pd.read_html(r.text)
@@ -29,8 +31,8 @@ class CapitalsMatcher:
         self.df1 = pd.merge(self.df1, temp_df, how="inner",left_on="Page title",right_on="Country/Territory")
         #self.df1.drop(columns=["Country/Territory"], inplace=True)
         self.df1 = self.df1[["Page title"]]
-        self.create_widgets()
-    def create_widgets(self):
+        self.create_widgets(self.difficulty)
+    def create_widgets(self, difficulty):
         #First creating the labels under which the Treeviews will be installed.
         self.label1 = tk.Label(self.master, text = "Countries")
         self.label1.grid(row=0,column=0)
@@ -43,8 +45,13 @@ class CapitalsMatcher:
             self.tree1.column(col, anchor="w")
             self.tree1.heading(col, text=col)
         self.tree1['show'] = ''
-        #Getting a random selection of countries.
-        random_country_df = self.df1.sample(5)
+        if difficulty == "random":
+            #Getting a random selection of countries.
+            random_country_df = self.df1.sample(5)
+        elif difficulty == "easy":
+            random_country_df = self.df1.head(5)
+        else:
+            random_country_df = self.df1.sample(5)
         self.new_df1 = random_country_df.copy()
         for index, row in random_country_df.iterrows():
             self.tree1.insert('', 'end', values=tuple(row))
@@ -98,16 +105,41 @@ class CapitalsMatcher:
             if match_count == len(self.correct_answers):
                 success_msg = msg.askquestion(title="Victory!", message="You have managed to get all your answers correct. Well done! Do you want to do it again?")
                 if success_msg == "yes":
-                    self.create_lists()
+                    self.create_lists("random")
                 else:
-                    root.destroy()
+                    self.master.destroy()
             else:
                 fail_msg = msg.askquestion(title="Defeat!", message="You got only " + str(match_count) + " correct out of " + str(len(self.correct_answers)) + ". The correct answers are: " + str(self.correct_answers) + ". Do you want to retry?")
                 if fail_msg == "yes":
-                    self.create_lists()
+                    self.create_lists("random")
                 else:
-                    root.destroy()
+                    self.master.destroy()
+class DifficultySelection:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Difficulty Selector")
+        self.create_buttons()
+    def create_buttons(self):
+        self.random_button = tk.Button(self.master, text="random", command=lambda: self.start_main_app("random"))
+        self.random_button.grid(row=1,column=0)
+
+        self.easy_button = tk.Button(self.master, text="easy", command=lambda: self.start_main_app("easy"))
+        self.easy_button.grid(row=2,column=0)
+
+        self.medium_button = tk.Button(self.master, text="medium", command=lambda: self.start_main_app("medium"))
+        self.medium_button.grid(row=3,column=0)
+
+        self.hard_button = tk.Button(self.master, text="hard", command=lambda: self.start_main_app("hard"))
+        self.hard_button.grid(row=4,column=0)
+        self.quit_button = tk.Button(self.master, text="quit", command=self.master.destroy)
+        self.quit_button.grid(row=5,column=0)
+
+    def start_main_app(self, difficulty):
+        self.master.destroy()
+        root = tk.Tk()
+        app = CapitalsMatcher(root, difficulty)
+        root.mainloop()
 if __name__ == "__main__":
     root = tk.Tk()
-    app = CapitalsMatcher(root)
+    app = DifficultySelection(root)
     root.mainloop()
