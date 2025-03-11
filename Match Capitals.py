@@ -2,6 +2,7 @@ import pandas as pd
 import tkinter as tk
 from tkinter import ttk
 import requests
+from io import StringIO
 import tkinter.messagebox as msg
 class CapitalsMatcher:
     def __init__(self, master, difficulty):
@@ -13,14 +14,16 @@ class CapitalsMatcher:
         self.difficulty = difficulty
         url = "https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Countries/Popular_pages"
         r = requests.get(url)
-        df_list = pd.read_html(r.text)
+        html_content1 = StringIO(r.text)
+        df_list = pd.read_html(html_content1)
         self.count = 0
         #The list of countries is the first table of the above URL. This is a list of country-related pages which arranged in popularity.
         #Just because this list features an item, it does not mean it is an actual country. Just related to countries.
         self.df1 = pd.DataFrame(df_list[0])
         url2 = "https://en.wikipedia.org/wiki/List_of_national_capitals"
         r2 = requests.get(url2)
-        df_list_2 = pd.read_html(r2.text)
+        html_content2 = StringIO(r2.text)
+        df_list_2 = pd.read_html(html_content2)
         
         #The list of countries and the capital cities is the first table of the above URL.
         self.df2 = pd.DataFrame(df_list_2[1])
